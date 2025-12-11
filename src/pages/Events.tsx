@@ -1,18 +1,31 @@
-import { Link } from 'react-router-dom';
-import { Calendar, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { useState } from 'react';
-
-const mockEvents = [
-  { id: '1', name: 'Christmas 2024', org: 'Tech Corp', date: '2024-12-25', participants: 15, status: 'active' },
-  { id: '2', name: 'Holiday Party', org: 'Design Team', date: '2024-12-20', participants: 8, status: 'active' },
-  { id: '3', name: 'Family Exchange', org: 'Family Group', date: '2024-12-24', participants: 12, status: 'completed' },
-];
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Calendar, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { generatePairs } from "@/services/api";
 
 const Events = () => {
-  const [events] = useState(mockEvents);
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadEvents() {
+      const data = await fetchEvents();
+      setEvents(data);
+      setLoading(false);
+    }
+    loadEvents();
+  }, []);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <p className="text-center mt-10">Loading events...</p>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -34,9 +47,9 @@ const Events = () => {
         </div>
 
         <div className="space-y-4">
-          {events.map((event, index) => (
+          {events.map((event: any, index: number) => (
             <Link to={`/events/${event.id}`} key={event.id}>
-              <Card 
+              <Card
                 className="card-hover cursor-pointer animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -52,11 +65,13 @@ const Events = () => {
                       </p>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    event.status === 'active' 
-                      ? 'bg-secondary/10 text-secondary' 
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      event.status === "active"
+                        ? "bg-secondary/10 text-secondary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
                     {event.status}
                   </span>
                 </CardContent>

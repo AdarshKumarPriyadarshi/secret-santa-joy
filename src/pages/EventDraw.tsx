@@ -1,3 +1,4 @@
+import { generatePairs } from "../services/api";
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Gift, AlertTriangle, Snowflake, CheckCircle, PartyPopper } from 'lucide-react';
@@ -19,17 +20,31 @@ import {
 const EventDraw = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 💥 Ensure these are inside the component
   const [isDrawing, setIsDrawing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [pairs, setPairs] = useState<any[]>([]);
 
-  const handleDraw = () => {
+  // 👇 FIX: Access participants INSIDE component
+  const participants = location.state?.participantNames || [];
+
+  const handleDraw = async () => {
     setIsDrawing(true);
-    
-    setTimeout(() => {
+
+    if (participants.length < 3) {
+      alert("Not enough participants!");
       setIsDrawing(false);
-      setIsComplete(true);
-    }, 3000);
+      return;
+    }
+
+    const result = await generatePairs(participants);
+    setPairs(result);
+
+    setIsDrawing(false);
+    setIsComplete(true);
   };
+
 
   if (isComplete) {
     return (
@@ -49,6 +64,16 @@ const EventDraw = () => {
                 <p className="text-xl text-muted-foreground">
                   Assignments generated and notifications sent!
                 </p>
+                <div className="mt-6 text-left">
+                  <h3 className="text-lg font-semibold mb-2">Generated Secret Santa Pairs:</h3>
+                  <ul className="space-y-1">
+                    {pairs.map((p, i) => (
+                      <li key={i} className="text-muted-foreground">
+                        🎁 {p.giver} ➜ {p.receiver}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
               <div className="bg-secondary/5 rounded-lg p-6 text-left space-y-2">
                 <p className="flex items-center gap-2">

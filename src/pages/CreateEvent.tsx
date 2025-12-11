@@ -98,7 +98,14 @@ const CreateEvent = () => {
       });
       return;
     }
-    navigate(`/events/draw`, { state: { formData, participants } });
+    navigate("/events/draw", {
+      state: {
+        formData,
+        participants,
+        participantNames: participants.map((p) => p.name),
+      },
+    });    
+    
   };
 
   return (
