@@ -1,10 +1,10 @@
-import { generatePairs } from "../services/api";
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Gift, AlertTriangle, Snowflake, CheckCircle, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { generatePairs, saveAssignments } from "@/services/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,19 +31,29 @@ const EventDraw = () => {
 
   const handleDraw = async () => {
     setIsDrawing(true);
-
+  
     if (participants.length < 3) {
       alert("Not enough participants!");
       setIsDrawing(false);
       return;
     }
-
+  
     const result = await generatePairs(participants);
     setPairs(result);
+  
+    // 🔥 SAVE assignments to backend
+    const eventId = location.state?.eventId;
+    if (!eventId) {
+      alert("Invalid event");
+      setIsDrawing(false);
+      return;
+    }
+    await saveAssignments(eventId, result);
 
     setIsDrawing(false);
     setIsComplete(true);
   };
+  
 
 
   if (isComplete) {

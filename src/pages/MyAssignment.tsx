@@ -2,26 +2,38 @@ import { useState, useEffect } from 'react';
 import { Gift, Calendar, DollarSign, Building2, Snowflake } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { fetchMyAssignment } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { useParams } from "react-router-dom";
+
 
 const MyAssignment = () => {
   const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [assignment, setAssignment] = useState<any>(null);
 
-  const assignment = {
-    recipientName: 'Jane Smith',
-    organizationName: 'Tech Corp',
-    eventName: 'Christmas Party 2024',
-    budget: 50,
-    eventDate: 'December 25, 2024',
-  };
+  const { user } = useAuth();
+
+  // TEMP: will be replaced with real eventId in next step
+ // TEMP: will be replaced with real eventId in next step
+ const { id: EVENT_ID } = useParams();
+
+
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    async function loadAssignment() {
+      if (!user || !EVENT_ID) return;
+
+
+      const data = await fetchMyAssignment(EVENT_ID, user.uniqueId);
+
+      setAssignment(data);
       setLoading(false);
-      setTimeout(() => setRevealed(true), 500);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+      setRevealed(true);
+    }
+
+    loadAssignment();
+  }, [user]);
 
   if (loading) {
     return (
@@ -51,6 +63,16 @@ const MyAssignment = () => {
     );
   }
 
+  if (!assignment || assignment.error) {
+    return (
+      <AppLayout>
+        <p className="text-center mt-10 text-muted-foreground">
+          No assignment found yet.
+        </p>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
@@ -58,25 +80,29 @@ const MyAssignment = () => {
           <div className="bg-gradient-to-br from-primary via-primary to-secondary p-8 text-center text-primary-foreground">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Building2 className="h-5 w-5" />
-              <span className="font-medium">{assignment.organizationName}</span>
+              <span className="font-medium">Organization</span>
             </div>
-            <h1 className="text-3xl font-bold font-display mb-2">{assignment.eventName}</h1>
+            <h1 className="text-3xl font-bold font-display mb-2">
+              Secret Santa Event
+            </h1>
             <div className="flex items-center justify-center gap-2 text-primary-foreground/80">
               <Calendar className="h-4 w-4" />
-              <span>{assignment.eventDate}</span>
+              <span>Event Day</span>
             </div>
           </div>
 
           <CardContent className="p-8 text-center">
             <div className="mb-8">
-              <p className="text-lg text-muted-foreground mb-4">You are Secret Santa for:</p>
-              
+              <p className="text-lg text-muted-foreground mb-4">
+                You are Secret Santa for:
+              </p>
+
               <div className={`${revealed ? 'reveal-animation' : 'opacity-0'}`}>
                 <div className="inline-flex items-center justify-center w-32 h-32 bg-primary/10 rounded-full mb-4">
                   <Gift className="h-16 w-16 text-primary" />
                 </div>
                 <h2 className="text-4xl font-bold text-primary font-display">
-                  {assignment.recipientName}
+                  {assignment.receiver}
                 </h2>
               </div>
             </div>
@@ -85,7 +111,7 @@ const MyAssignment = () => {
               <DollarSign className="h-6 w-6 text-secondary" />
               <div className="text-left">
                 <p className="text-sm text-muted-foreground">Budget</p>
-                <p className="text-2xl font-bold">${assignment.budget}</p>
+                <p className="text-2xl font-bold">$50</p>
               </div>
             </div>
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { generatePairs } from "@/services/api";
+import { fetchEvents} from "@/services/api";
 
 const Events = () => {
   const [events, setEvents] = useState<any[]>([]);
@@ -14,10 +15,12 @@ const Events = () => {
     async function loadEvents() {
       const data = await fetchEvents();
       setEvents(data);
-      setLoading(false);
+      setLoading(false); // ✅ ADD THIS
     }
     loadEvents();
   }, []);
+  
+  
 
   if (loading) {
     return (
@@ -61,18 +64,18 @@ const Events = () => {
                     <div>
                       <h3 className="text-lg font-bold">{event.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {event.org} • {event.date} • {event.participants} participants
+                        {event.org_name} • {event.date} • {event.participants} participants
                       </p>
                     </div>
                   </div>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      event.status === "active"
+                      (event.status || "active") === "active"
                         ? "bg-secondary/10 text-secondary"
                         : "bg-muted text-muted-foreground"
-                    }`}
+                    }`}                    
                   >
-                    {event.status}
+                    {event.status || "active"}
                   </span>
                 </CardContent>
               </Card>

@@ -3,16 +3,31 @@ import { Building2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { useState } from 'react';
-
-const mockOrgs = [
-  { id: '1', name: 'Tech Corp', photo: '', members: 25, budget: 50 },
-  { id: '2', name: 'Design Team', photo: '', members: 8, budget: 30 },
-  { id: '3', name: 'Family Group', photo: '', members: 12, budget: 75 },
-];
+import { useEffect, useState } from 'react';
+import { fetchOrganizations } from "@/services/api";
 
 const Organizations = () => {
-  const [organizations] = useState(mockOrgs);
+  const [organizations, setOrganizations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadOrgs() {
+      const data = await fetchOrganizations();
+      setOrganizations(data);
+      setLoading(false);
+    }
+    loadOrgs();
+  }, []);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="max-w-4xl mx-auto text-center mt-10">
+          <p>Loading organizations...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -34,9 +49,9 @@ const Organizations = () => {
         </div>
 
         <div className="space-y-4">
-          {organizations.map((org, index) => (
+          {organizations.map((org: any, index: number) => (
             <Link to={`/organizations/${org.id}`} key={org.id}>
-              <Card 
+              <Card
                 className="card-hover cursor-pointer animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -47,7 +62,7 @@ const Organizations = () => {
                   <div className="flex-1">
                     <h3 className="text-xl font-bold font-display">{org.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {org.members} members • ${org.budget} budget
+                      {org.budget} budget
                     </p>
                   </div>
                 </CardContent>

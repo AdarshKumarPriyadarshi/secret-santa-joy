@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
+import { createOrganization } from "@/services/api";
+
 
 const CreateOrganization = () => {
   const [formData, setFormData] = useState({
@@ -26,20 +28,46 @@ const CreateOrganization = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+  
     if (!formData.name) {
-      toast({ title: "Error", description: "Organization name is required", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Organization name is required",
+        variant: "destructive",
+      });
       return;
     }
-
+  
     setLoading(true);
-    setTimeout(() => {
+  
+    const orgData = {
+      name: formData.name,
+      photo: formData.photo || "",
+      budget: Number(formData.budget),
+      description: formData.description || "",
+    };
+  
+    const created = await createOrganization(orgData);
+  
+    setLoading(false);
+  
+    if (!created) {
       toast({
-        title: "Organization Created! 🎄",
-        description: `${formData.name} is ready for Secret Santa!`,
+        title: "Error",
+        description: "Failed to create organization.",
+        variant: "destructive",
       });
-      navigate('/dashboard');
-    }, 1000);
+      return;
+    }
+  
+    toast({
+      title: "Organization Created! 🎄",
+      description: `${formData.name} has been saved successfully.`,
+    });
+  
+    navigate("/organizations");
   };
+  
 
   return (
     <AppLayout>

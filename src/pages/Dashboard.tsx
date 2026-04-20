@@ -1,18 +1,33 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Users, DollarSign, Building2, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AppLayout } from '@/components/layout/AppLayout';
-
-const mockOrgs = [
-  { id: '1', name: 'Tech Corp', photo: '', members: 25, budget: 50 },
-  { id: '2', name: 'Design Team', photo: '', members: 8, budget: 30 },
-  { id: '3', name: 'Family Group', photo: '', members: 12, budget: 75 },
-];
+import { fetchOrganizations } from "@/services/api";
+import { useEffect, useState } from 'react';
 
 const Dashboard = () => {
-  const [organizations] = useState(mockOrgs);
+  const [organizations, setOrganizations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadOrgs() {
+      const data = await fetchOrganizations();
+      setOrganizations(data);
+      setLoading(false);
+    }
+    loadOrgs();
+  }, []);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="max-w-6xl mx-auto text-center mt-10">
+          <p>Loading organizations...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -64,10 +79,6 @@ const Dashboard = () => {
                   <CardContent className="p-5">
                     <h3 className="text-xl font-bold mb-3 font-display">{org.name}</h3>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="h-4 w-4" />
-                        <span>{org.members} members</span>
-                      </div>
                       <div className="flex items-center gap-1.5">
                         <DollarSign className="h-4 w-4" />
                         <span>${org.budget} budget</span>
